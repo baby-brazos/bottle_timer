@@ -1,0 +1,73 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="{{ site.lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f6f1ea">
+  <title>{{ site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+</head>
+<body>
+
+  <!-- Password screen -->
+  <main id="lock" class="screen">
+    <h1>🍼 {{ site.title }}</h1>
+    <form id="lock-form" autocomplete="off">
+      <label for="password">Password</label>
+      <input id="password" type="password" required autofocus>
+      <button type="submit">Enter</button>
+      <p id="lock-error" class="error" hidden>That's not it. Try again.</p>
+    </form>
+  </main>
+
+  <!-- Main app -->
+  <main id="app" class="screen" hidden>
+    <header>
+      <h1>🍼 {{ site.title }}</h1>
+      <button id="logout" class="link">Lock</button>
+    </header>
+
+    <section class="card countdown">
+      <p class="label" id="next-label">Next bottle</p>
+      <p class="big" id="countdown">--:--:--</p>
+      <p class="sub" id="next-time"></p>
+    </section>
+
+    <section class="card">
+      <form id="feed-form">
+        <label for="feed-time">Feeding time</label>
+        <div class="row">
+          <input id="feed-time" type="time" required>
+          <button type="button" id="now" class="secondary">Now</button>
+        </div>
+        <button type="submit">Log feeding</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Today's schedule</h2>
+      <ul id="schedule"></ul>
+      <p id="empty" class="sub">Log the first feeding to see the schedule.</p>
+    </section>
+
+    <section class="card">
+      <h2>Logged today</h2>
+      <ul id="log"></ul>
+      <button id="reset" class="link danger">Clear today</button>
+    </section>
+  </main>
+
+  <script>
+    window.BOTTLE_CONFIG = {
+      intervalHours: {{ site.bottle.interval_hours | default: 3 }},
+      cutoff: "{{ site.bottle.cutoff | default: '19:30' }}",
+      passwordHash: "80f2aed3c618c423ddf05a2891229fba44942d907173152442cf6591441ed6dc"
+    };
+  </script>
+  <script src="{{ '/assets/app.js' | relative_url }}"></script>
+</body>
+</html>
