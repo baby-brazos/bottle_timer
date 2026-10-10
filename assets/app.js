@@ -2,7 +2,7 @@
   "use strict";
 
   var CFG = window.BOTTLE_CONFIG;
-  var KEY_AUTH = "bottle.auth";
+  // Separate key from the pump site, since both may live on the same github.io domain.
   var KEY_LOG = "bottle.log";
 
   // ---------- storage helpers (fail quietly in private mode) ----------
@@ -31,43 +31,10 @@
     return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
   function pad(n) { return String(n).padStart(2, "0"); }
-
-  // ---------- password ----------
-  async function sha256(text) {
-    var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-    return Array.from(new Uint8Array(buf)).map(function (b) {
-      return b.toString(16).padStart(2, "0");
-    }).join("");
+  function hms(totalSeconds) {
+    return Math.floor(totalSeconds / 3600) + ":" +
+      pad(Math.floor(totalSeconds / 60) % 60) + ":" + pad(totalSeconds % 60);
   }
-
-  var lockEl = document.getElementById("lock");
-  var appEl = document.getElementById("app");
-
-  function unlock() {
-    lockEl.hidden = true;
-    appEl.hidden = false;
-    render();
-  }
-
-  document.getElementById("lock-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var input = document.getElementById("password");
-    var hash = await sha256(input.value.trim());
-    if (hash === CFG.passwordHash) {
-      save(KEY_AUTH, CFG.passwordHash);
-      input.value = "";
-      unlock();
-    } else {
-      document.getElementById("lock-error").hidden = false;
-      input.select();
-    }
-  });
-
-  document.getElementById("logout").addEventListener("click", function () {
-    try { localStorage.removeItem(KEY_AUTH); } catch (e) {}
-    appEl.hidden = true;
-    lockEl.hidden = false;
-  });
 
   // ---------- feeding log ----------
   // Stored as { day: "2026-10-10", feeds: [timestamp, ...] }
@@ -121,12 +88,16 @@
       if (t.getTime() < now) li.className = "past";
       sched.appendChild(li);
     });
-    document.getElementById("empty").hidden = log.feeds.length > 0;
-    if (log.feeds.length && !upcoming.length) {
-      document.getElementById("empty").hidden = false;
-      document.getElementById("empty").textContent = "No more bottles before " + fmt(atTime(CFG.cutoff)) + ".";
+
+    var empty = document.getElementById("empty");
+    if (!log.feeds.length) {
+      empty.hidden = false;
+      empty.textContent = "Log the first feeding to see the schedule.";
+    } else if (!upcoming.length) {
+      empty.hidden = false;
+      empty.textContent = "No more bottles before " + fmt(atTime(CFG.cutoff)) + ".";
     } else {
-      document.getElementById("empty").textContent = "Log the first feeding to see the schedule.";
+      empty.hidden = true;
     }
 
     var logEl = document.getElementById("log");
@@ -148,45 +119,33 @@
   }
 
   function tick() {
-    var next = schedule().find(function (t) { return t.getTime() > Date.now(); });
+    var times = schedule();
+    var now = Date.now();
     var cd = document.getElementById("countdown");
     var label = document.getElementById("next-label");
     var nextTime = document.getElementById("next-time");
     var card = cd.parentElement;
 
-    if (!next) {
-      var overdue = schedule().filter(function (t) { return t.getTime() <= Date.now(); }).pop();
-      if (overdue) {
-        var late = Math.floor((Date.now() - overdue.getTime()) / 1000);
-        label.textContent = "Bottle due";
-        cd.textContent = "+" + Math.floor(late / 3600) + ":" + pad(Math.floor(late / 60) % 60) + ":" + pad(late % 60);
-        nextTime.textContent = "Was due at " + fmt(overdue);
-        card.classList.add("due");
-      } else {
-        label.textContent = "Next bottle";
-        cd.textContent = "--:--:--";
-        nextTime.textContent = getLog().feeds.length ? "Done for today" : "";
-        card.classList.remove("due");
-      }
-      return;
-    }
-
-    // If an earlier slot passed without a logged feeding, show it as due.
-    var missed = schedule().filter(function (t) { return t.getTime() <= Date.now(); }).pop();
+    // A scheduled slot has passed without a newer feeding logged: show it as due.
+    var missed = times.filter(function (t) { return t.getTime() <= now; }).pop();
     if (missed) {
-      var s2 = Math.floor((Date.now() - missed.getTime()) / 1000);
       label.textContent = "Bottle due";
-      cd.textContent = "+" + Math.floor(s2 / 3600) + ":" + pad(Math.floor(s2 / 60) % 60) + ":" + pad(s2 % 60);
+      cd.textContent = "+" + hms(Math.floor((now - missed.getTime()) / 1000));
       nextTime.textContent = "Was due at " + fmt(missed);
       card.classList.add("due");
       return;
     }
 
-    var s = Math.max(0, Math.floor((next.getTime() - Date.now()) / 1000));
-    label.textContent = "Next bottle";
-    cd.textContent = Math.floor(s / 3600) + ":" + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60);
-    nextTime.textContent = "at " + fmt(next);
+    var next = times.find(function (t) { return t.getTime() > now; });
     card.classList.remove("due");
+    label.textContent = "Next bottle";
+    if (!next) {
+      cd.textContent = "--:--:--";
+      nextTime.textContent = getLog().feeds.length ? "Done for today" : "";
+      return;
+    }
+    cd.textContent = hms(Math.max(0, Math.floor((next.getTime() - now) / 1000)));
+    nextTime.textContent = "at " + fmt(next);
   }
 
   // ---------- form ----------
@@ -212,11 +171,10 @@
   });
 
   // ---------- start ----------
+  var lastDay = todayKey();
   setNow();
+  render();
   setInterval(function () {
-    if (appEl.hidden) return;
-    if (getLog().day !== todayKey()) render(); else tick();
+    if (todayKey() !== lastDay) { lastDay = todayKey(); render(); } else { tick(); }
   }, 1000);
-
-  if (load(KEY_AUTH, null) === CFG.passwordHash) unlock();
 })();

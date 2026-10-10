@@ -7,28 +7,15 @@ layout: null
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#f6f1ea">
+  <meta name="theme-color" content="#dff1ec">
   <title>{{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
 </head>
 <body>
 
-  <!-- Password screen -->
-  <main id="lock" class="screen">
-    <h1>{{ site.title }}</h1>
-    <form id="lock-form" autocomplete="off">
-      <label for="password">Password</label>
-      <input id="password" type="password" required autofocus>
-      <button type="submit">Enter</button>
-      <p id="lock-error" class="error" hidden>That's not it. Try again.</p>
-    </form>
-  </main>
-
-  <!-- Main app -->
-  <main id="app" class="screen" hidden>
+  <main id="app" class="screen">
     <header>
-      <h1>{{ site.title }}</h1>
-      <button id="logout" class="link">Lock</button>
+      <h1>🍼 {{ site.title }}</h1>
     </header>
 
     <section class="card countdown">
@@ -64,8 +51,7 @@ layout: null
   <script>
     window.BOTTLE_CONFIG = {
       intervalHours: {{ site.bottle.interval_hours | default: 3 }},
-      cutoff: "{{ site.bottle.cutoff | default: '19:30' }}",
-      passwordHash: "80f2aed3c618c423ddf05a2891229fba44942d907173152442cf6591441ed6dc"
+      cutoff: "{{ site.bottle.cutoff | default: '19:30' }}"
     };
   </script>
   <script src="{{ '/assets/app.js' | relative_url }}"></script>
