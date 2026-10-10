@@ -9,13 +9,16 @@ layout: null
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#dff1ec">
   <title>{{ site.title }}</title>
-  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <meta name="apple-mobile-web-app-title" content="Bottles">
+  <link rel="apple-touch-icon" href="{{ '/apple-touch-icon.png' | relative_url }}?v={{ site.time | date: '%s' }}">
+  <link rel="icon" type="image/png" href="{{ '/apple-touch-icon.png' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}?v={{ site.time | date: '%s' }}">
 </head>
 <body>
 
   <main id="app" class="screen">
     <header>
-      <h1>{{ site.title }}</h1>
+      <h1>🍼 {{ site.title }}</h1>
     </header>
 
     <section class="card countdown">
@@ -54,6 +57,6 @@ layout: null
       cutoff: "{{ site.bottle.cutoff | default: '19:30' }}"
     };
   </script>
-  <script src="{{ '/assets/app.js' | relative_url }}"></script>
+  <script src="{{ '/assets/app.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
 </body>
 </html>

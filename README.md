@@ -7,6 +7,7 @@ the next bottles every 2.5 hours until 7:30 PM, with a live countdown to the nex
 
 - `_config.yml` – site title, feeding interval, and cutoff time
 - `index.html` – the page
+- `apple-touch-icon.png` – the iPhone home-screen icon (180×180)
 - `assets/app.js` – schedule and countdown logic
 - `assets/dinos.svg` – the dinosaur background tile
 - `assets/style.css` – styling (follows light/dark mode)
