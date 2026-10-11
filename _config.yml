@@ -1,11 +1,11 @@
-title: Bottle Times
+title: Feeding Times
 description: Feeding schedule and countdown
 lang: en
 
 # Feeding schedule settings (read by the page's JavaScript)
 bottle:
   interval_hours: 2.5
-  cutoff: "19:30"   # last bottle can be at or before this time (24-hour clock)
+  cutoff: "20:30"   # last bottle can be at or before this time (24-hour clock)
 
 exclude:
   - README.md
